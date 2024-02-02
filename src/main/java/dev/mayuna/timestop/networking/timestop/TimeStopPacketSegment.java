@@ -1,4 +1,4 @@
-package dev.mayuna.timestop.networking.tcp.timestop;
+package dev.mayuna.timestop.networking.timestop;
 
 import lombok.Getter;
 

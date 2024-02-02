@@ -146,7 +146,7 @@ public class TestEncryptionManagerBasics {
         PublicKey publicKey;
 
         try {
-            publicKey = EncryptionManager.loadAsymmetricPublicKeyFromBytes(publicKeyBytes);
+            publicKey = encryptionManager.loadAsymmetricPublicKeyFromBytes(publicKeyBytes);
         } catch (Exception exception) {
             Assertions.fail(exception);
             return;

@@ -1,4 +1,4 @@
-package dev.mayuna.timestop.networking.tcp.base.listener;
+package dev.mayuna.timestop.networking.base.listener;
 
 import com.esotericsoftware.kryonet.Connection;
 import lombok.Getter;

@@ -1,7 +1,7 @@
-package dev.mayuna.timestop.networking.tcp.base.translator;
+package dev.mayuna.timestop.networking.base.translator;
 
 import com.esotericsoftware.kryonet.Connection;
-import dev.mayuna.timestop.networking.tcp.base.ConnectionContext;
+import dev.mayuna.timestop.networking.base.ConnectionContext;
 import lombok.Getter;
 import lombok.NonNull;
 

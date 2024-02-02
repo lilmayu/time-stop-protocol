@@ -1,10 +1,10 @@
-package dev.mayuna.timestop.networking.tcp.base.serialization;
+package dev.mayuna.timestop.networking.base.serialization;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.minlog.Log;
-import dev.mayuna.timestop.networking.tcp.timestop.Packets;
-import dev.mayuna.timestop.networking.tcp.timestop.TimeStopPacket;
-import dev.mayuna.timestop.networking.tcp.timestop.TimeStopPacketSegment;
+import dev.mayuna.timestop.networking.timestop.Packets;
+import dev.mayuna.timestop.networking.timestop.TimeStopPacket;
+import dev.mayuna.timestop.networking.timestop.TimeStopPacketSegment;
 
 import java.util.UUID;
 

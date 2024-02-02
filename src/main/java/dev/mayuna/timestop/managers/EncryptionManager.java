@@ -9,7 +9,6 @@ import javax.crypto.spec.SecretKeySpec;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.nio.file.Files;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
@@ -21,9 +20,6 @@ import java.security.spec.X509EncodedKeySpec;
  */
 @Getter
 public class EncryptionManager {
-
-    public static final String ASYMMETRIC_KEY_TYPE = "RSA";
-    public static final String SYMMETRIC_KEY_TYPE = "AES";
 
     private final EncryptionConfig encryptionConfig;
 
@@ -37,22 +33,6 @@ public class EncryptionManager {
      */
     public EncryptionManager(EncryptionConfig encryptionConfig) {
         this.encryptionConfig = encryptionConfig;
-    }
-
-    /**
-     * Loads the asymmetric public key from the given bytes
-     *
-     * @param publicKeyBytes The public key bytes
-     *
-     * @return The public key
-     *
-     * @throws NoSuchAlgorithmException If the algorithm is not supported
-     * @throws InvalidKeySpecException  If the key spec is invalid
-     */
-    public static PublicKey loadAsymmetricPublicKeyFromBytes(byte[] publicKeyBytes) throws NoSuchAlgorithmException, InvalidKeySpecException {
-        KeyFactory keyFactory = KeyFactory.getInstance(ASYMMETRIC_KEY_TYPE);
-        X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(publicKeyBytes);
-        return keyFactory.generatePublic(publicKeySpec);
     }
 
     /**
@@ -96,12 +76,28 @@ public class EncryptionManager {
     }
 
     /**
+     * Loads the asymmetric public key from the given bytes
+     *
+     * @param publicKeyBytes The public key bytes
+     *
+     * @return The public key
+     *
+     * @throws NoSuchAlgorithmException If the algorithm is not supported
+     * @throws InvalidKeySpecException  If the key spec is invalid
+     */
+    public PublicKey loadAsymmetricPublicKeyFromBytes(byte[] publicKeyBytes) throws NoSuchAlgorithmException, InvalidKeySpecException {
+        KeyFactory keyFactory = KeyFactory.getInstance(encryptionConfig.getAsymmetricKeyType());
+        X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(publicKeyBytes);
+        return keyFactory.generatePublic(publicKeySpec);
+    }
+
+    /**
      * Generates a new asymmetric key pair
      *
      * @throws NoSuchAlgorithmException If the algorithm is not supported
      */
     public void generateAsymmetricKeyPair() throws NoSuchAlgorithmException {
-        KeyPairGenerator kpg = KeyPairGenerator.getInstance(ASYMMETRIC_KEY_TYPE);
+        KeyPairGenerator kpg = KeyPairGenerator.getInstance(encryptionConfig.getAsymmetricKeyType());
         kpg.initialize(encryptionConfig.getAsymmetricKeySize());
         asymetricKeyPair = kpg.generateKeyPair();
     }
@@ -112,7 +108,7 @@ public class EncryptionManager {
      * @throws NoSuchAlgorithmException If the algorithm is not supported
      */
     public void generateSymmetricKey() throws NoSuchAlgorithmException {
-        KeyGenerator keyGen = KeyGenerator.getInstance(SYMMETRIC_KEY_TYPE);
+        KeyGenerator keyGen = KeyGenerator.getInstance(encryptionConfig.getSymmetricKeyType());
         keyGen.init(encryptionConfig.getSymmetricKeySize());
         symmetricKey = keyGen.generateKey();
     }
@@ -231,7 +227,7 @@ public class EncryptionManager {
             throw new IOException("Private key file at " + privateKeyFile.getAbsolutePath() + " does not exist");
         }
 
-        KeyFactory keyFactory = KeyFactory.getInstance(ASYMMETRIC_KEY_TYPE);
+        KeyFactory keyFactory = KeyFactory.getInstance(encryptionConfig.getAsymmetricKeyType());
 
         // Load private key
         byte[] privateKeyBytes = Files.readAllBytes(privateKeyFile.toPath());
@@ -275,7 +271,7 @@ public class EncryptionManager {
      *
      * @param fileNameWithoutExtension The file name without extension (will be .key)
      *
-     * @throws IOException              If the file could not be read
+     * @throws IOException If the file could not be read
      */
     public void loadSymmetricKey(String fileNameWithoutExtension) throws IOException {
         File keyFile = new File(fileNameWithoutExtension + ".key");

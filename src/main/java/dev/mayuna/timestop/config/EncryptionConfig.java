@@ -8,4 +8,6 @@ public class EncryptionConfig {
 
     private int asymmetricKeySize = 2048;
     private int symmetricKeySize = 256;
+    public String asymmetricKeyType = "RSA";
+    public String symmetricKeyType = "AES";
 }

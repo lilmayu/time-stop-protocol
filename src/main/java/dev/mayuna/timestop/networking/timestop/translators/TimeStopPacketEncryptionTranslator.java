@@ -1,9 +1,9 @@
-package dev.mayuna.timestop.networking.tcp.timestop.translators;
+package dev.mayuna.timestop.networking.timestop.translators;
 
 import dev.mayuna.timestop.exceptions.FailedToDecryptPacketException;
 import dev.mayuna.timestop.managers.EncryptionManager;
-import dev.mayuna.timestop.networking.tcp.base.translator.TimeStopTranslator;
-import dev.mayuna.timestop.networking.tcp.timestop.TimeStopPacket;
+import dev.mayuna.timestop.networking.base.translator.TimeStopTranslator;
+import dev.mayuna.timestop.networking.timestop.TimeStopPacket;
 
 import java.util.function.Function;
 

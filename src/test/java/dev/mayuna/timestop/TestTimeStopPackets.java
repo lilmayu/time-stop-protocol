@@ -1,11 +1,11 @@
 package dev.mayuna.timestop;
 
 import dev.mayuna.timestop.networking.NetworkConstants;
-import dev.mayuna.timestop.networking.tcp.base.EndpointConfig;
-import dev.mayuna.timestop.networking.tcp.base.TimeStopClient;
-import dev.mayuna.timestop.networking.tcp.base.TimeStopServer;
-import dev.mayuna.timestop.networking.tcp.base.listener.TimeStopListener;
-import dev.mayuna.timestop.networking.tcp.timestop.Packets;
+import dev.mayuna.timestop.networking.base.EndpointConfig;
+import dev.mayuna.timestop.networking.base.TimeStopClient;
+import dev.mayuna.timestop.networking.base.TimeStopServer;
+import dev.mayuna.timestop.networking.base.listener.TimeStopListener;
+import dev.mayuna.timestop.networking.timestop.Packets;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.AfterAll;
@@ -27,12 +27,12 @@ public class TestTimeStopPackets {
     @BeforeAll
     public static void setup() {
         server = new TimeStopServer(new EndpointConfig());
-        assertDoesNotThrow(() -> server.bind(NetworkConstants.DEFAULT_PORT));
+        assertDoesNotThrow(() -> server.bind(TestNetworkConstants.DEFAULT_PORT));
         server.start();
 
         client = new TimeStopClient(new EndpointConfig());
         client.start();
-        assertDoesNotThrow(() -> client.connect(5000, HOST, NetworkConstants.DEFAULT_PORT));
+        assertDoesNotThrow(() -> client.connect(5000, HOST, TestNetworkConstants.DEFAULT_PORT));
     }
 
     @AfterAll

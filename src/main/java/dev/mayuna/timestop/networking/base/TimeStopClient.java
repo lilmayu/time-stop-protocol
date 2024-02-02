@@ -1,15 +1,15 @@
-package dev.mayuna.timestop.networking.tcp.base;
+package dev.mayuna.timestop.networking.base;
 
+import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
-import com.esotericsoftware.kryonet.Server;
 import com.esotericsoftware.minlog.Log;
 import dev.mayuna.timestop.networking.NetworkConstants;
-import dev.mayuna.timestop.networking.tcp.base.listener.TimeStopListener;
-import dev.mayuna.timestop.networking.tcp.base.listener.TimeStopListenerManager;
-import dev.mayuna.timestop.networking.tcp.base.serialization.TimeStopSerialization;
-import dev.mayuna.timestop.networking.tcp.base.translator.TimeStopTranslator;
-import dev.mayuna.timestop.networking.tcp.base.translator.TimeStopTranslatorManager;
+import dev.mayuna.timestop.networking.base.listener.TimeStopListener;
+import dev.mayuna.timestop.networking.base.listener.TimeStopListenerManager;
+import dev.mayuna.timestop.networking.base.serialization.TimeStopSerialization;
+import dev.mayuna.timestop.networking.base.translator.TimeStopTranslator;
+import dev.mayuna.timestop.networking.base.translator.TimeStopTranslatorManager;
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -19,10 +19,10 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 /**
- * TimeStopServer
+ * TimeStopClient
  */
 @Getter
-public class TimeStopServer extends Server implements Listener {
+public class TimeStopClient extends Client implements Listener {
 
     private final Timer timeoutTimer = new Timer();
     private final EndpointConfig endpointConfig;
@@ -30,27 +30,36 @@ public class TimeStopServer extends Server implements Listener {
     private TimeStopTranslatorManager translatorManager;
 
     /**
-     * Creates a new server with the given endpoint config
+     * Creates a new client with the given endpoint config
      *
-     * @param endpointConfig Endpoint config
+     * @param endpointConfig   Endpoint config
+     * @param writeBufferSize  Write buffer size
+     * @param objectBufferSize Object buffer size
      */
-    public TimeStopServer(EndpointConfig endpointConfig) {
-        super(NetworkConstants.WRITE_BUFFER_SIZE, NetworkConstants.OBJECT_BUFFER_SIZE);
-
+    public TimeStopClient(EndpointConfig endpointConfig, int writeBufferSize, int objectBufferSize) {
+        super(writeBufferSize, objectBufferSize);
         this.endpointConfig = endpointConfig;
-
         prepare();
     }
 
     /**
-     * Prepares the server for usage
+     * Creates a new client with the given endpoint config
+     *
+     * @param endpointConfig Endpoint config
+     */
+    public TimeStopClient(EndpointConfig endpointConfig) {
+        this(endpointConfig, NetworkConstants.WRITE_BUFFER_SIZE, NetworkConstants.OBJECT_BUFFER_SIZE);
+    }
+
+    /**
+     * Prepares the client for usage
      */
     private void prepare() {
-        Log.info("Preparing server...");
+        Log.info("Preparing client...");
 
         // Listener & translator manager
         listenerManager = new TimeStopListenerManager(endpointConfig.getMaxThreads());
-        translatorManager = new TimeStopTranslatorManager();
+        translatorManager = new TimeStopTranslatorManager(endpointConfig.isCloseConnectionsOnTranslationException());
 
         // Register classes
         TimeStopSerialization.register(getKryo());
@@ -60,53 +69,53 @@ public class TimeStopServer extends Server implements Listener {
     }
 
     /**
-     * Creates a new TimeStopConnection with current listener manager and translator manager
+     * Sends the given object to the server<br>Object will be translated before sending using {@link TimeStopTranslatorManager}.
      *
-     * @return Connection
+     * @param object Object to send
+     *
+     * @return Number of bytes sent (0 when object was translated to null)
      */
     @Override
-    protected Connection newConnection() {
-        return new TimeStopConnection(listenerManager, translatorManager);
-    }
-
-    /**
-     * Processes received objects. Translates them using {@link TimeStopTranslatorManager} and then passes them to {@link TimeStopListenerManager}.
-     *
-     * @param connection Connection
-     * @param object     Object
-     */
-    @Override
-    public void received(Connection connection, Object object) {
-        object = translatorManager.process(new TimeStopTranslator.Context(connection, TimeStopTranslator.Context.Way.INBOUND), object);
+    public int sendTCP(Object object) {
+        object = translatorManager.process(new TimeStopTranslator.Context(this, TimeStopTranslator.Context.Way.OUTBOUND), object);
 
         if (object == null) {
-            return;
+            return 0;
         }
 
-        listenerManager.process(connection, object);
+        return super.sendTCP(object);
     }
 
     /**
      * Sends the given object to the server<br>Object will be translated before sending using {@link TimeStopTranslatorManager}.
      *
-     * @param connection Connection
-     * @param object     Object to send
+     * @param object Object to send
+     *
+     * @return Number of bytes sent (0 when object was translated to null)
      */
-    public void sendToTCP(Connection connection, Object object) {
-        sendToTCP(connection.getID(), object);
+    @Override
+    public int sendUDP(Object object) {
+        object = translatorManager.process(new TimeStopTranslator.Context(this, TimeStopTranslator.Context.Way.OUTBOUND), object);
+
+        if (object == null) {
+            return 0;
+        }
+
+        return super.sendUDP(object);
     }
 
     /**
      * Sends the given object to the server and waits for a response<br>Object will be translated before sending using
      * {@link TimeStopTranslatorManager}.
      *
-     * @param connection    Connection
      * @param object        Object to send
      * @param responseClass Class of the response
      * @param onResponse    Consumer that will be called when the response is received
      * @param <T>           Type of the response
+     *
+     * @return Number of bytes sent (0 when object was translated to null)
      */
-    public <T> void sendTCPWithResponse(Connection connection, Object object, Class<T> responseClass, Consumer<T> onResponse) {
+    public <T> int sendTCPWithResponse(Object object, Class<T> responseClass, Consumer<T> onResponse) {
         listenerManager.registerOneTimeListener(new TimeStopListener<T>(responseClass, 0) {
             @Override
             public void process(@NonNull Context context, @NonNull T message) {
@@ -114,22 +123,23 @@ public class TimeStopServer extends Server implements Listener {
             }
         });
 
-        sendToTCP(connection, object);
+        return sendTCP(object);
     }
 
     /**
      * Sends the given object to the server and waits for a response<br>Object will be translated before sending using
      * {@link TimeStopTranslatorManager}.
      *
-     * @param connection    Connection
      * @param object        Object to send
      * @param responseClass Class of the response
      * @param timeout       Timeout in milliseconds
      * @param onResponse    Consumer that will be called when the response is received
      * @param onTimeout     Runnable that will be called when the timeout elapsed
      * @param <T>           Type of the response
+     *
+     * @return Number of bytes sent (0 when object was translated to null)
      */
-    public <T> void sendToTCPWithResponse(Connection connection, Object object, Class<T> responseClass, int timeout, Consumer<T> onResponse, Runnable onTimeout) {
+    public <T> int sendTCPWithResponse(Object object, Class<T> responseClass, int timeout, Consumer<T> onResponse, Runnable onTimeout) {
         AtomicReference<Runnable> timeoutRunnable = new AtomicReference<>(null);
 
         TimerTask timerTask = new TimerTask() {
@@ -159,8 +169,19 @@ public class TimeStopServer extends Server implements Listener {
         timeoutTimer.schedule(timerTask, timeout);
 
         // Register one time listener
-        listenerManager.registerOneTimeListener(listener, (context, message) -> context.getConnection().getID() == connection.getID());
+        listenerManager.registerOneTimeListener(listener);
 
-        sendToTCP(connection, object);
+        return sendTCP(object);
+    }
+
+    @Override
+    public void received(Connection connection, Object object) {
+        object = translatorManager.process(new TimeStopTranslator.Context(connection, TimeStopTranslator.Context.Way.INBOUND), object);
+
+        if (object == null) {
+            return;
+        }
+
+        listenerManager.process(connection, object);
     }
 }

@@ -1,4 +1,4 @@
-package dev.mayuna.timestop.networking.tcp.base.serialization;
+package dev.mayuna.timestop.networking.base.serialization;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.Serializer;

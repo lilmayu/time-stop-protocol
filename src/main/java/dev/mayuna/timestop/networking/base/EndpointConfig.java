@@ -1,4 +1,4 @@
-package dev.mayuna.timestop.networking.tcp.base;
+package dev.mayuna.timestop.networking.base;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -9,6 +9,7 @@ import lombok.Setter;
 @Getter @Setter
 public class EndpointConfig {
 
-    private int maxThreads = 1;
+    protected int maxThreads = 1;
+    protected boolean closeConnectionsOnTranslationException = true;
 
 }

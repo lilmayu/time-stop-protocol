@@ -1,9 +1,9 @@
-package dev.mayuna.timestop.networking.tcp.timestop.translators;
+package dev.mayuna.timestop.networking.timestop.translators;
 
 import com.esotericsoftware.kryonet.FrameworkMessage;
-import dev.mayuna.timestop.networking.tcp.base.translator.TimeStopTranslator;
-import dev.mayuna.timestop.networking.tcp.timestop.TimeStopPacket;
-import dev.mayuna.timestop.networking.tcp.timestop.TimeStopPacketSegment;
+import dev.mayuna.timestop.networking.base.translator.TimeStopTranslator;
+import dev.mayuna.timestop.networking.timestop.TimeStopPacket;
+import dev.mayuna.timestop.networking.timestop.TimeStopPacketSegment;
 
 import java.util.*;
 

@@ -1,4 +1,4 @@
-package dev.mayuna.timestop.networking.tcp.timestop;
+package dev.mayuna.timestop.networking.timestop;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -13,7 +13,7 @@ public class Packets {
     }
 
     /**
-     * Error message
+     * Base packet
      */
     @Getter
     @Setter

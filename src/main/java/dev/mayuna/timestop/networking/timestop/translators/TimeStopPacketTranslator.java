@@ -1,11 +1,11 @@
-package dev.mayuna.timestop.networking.tcp.timestop.translators;
+package dev.mayuna.timestop.networking.timestop.translators;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.ByteBufferInput;
 import com.esotericsoftware.kryo.io.ByteBufferOutput;
 import com.esotericsoftware.kryonet.FrameworkMessage;
-import dev.mayuna.timestop.networking.tcp.base.translator.TimeStopTranslator;
-import dev.mayuna.timestop.networking.tcp.timestop.TimeStopPacket;
+import dev.mayuna.timestop.networking.base.translator.TimeStopTranslator;
+import dev.mayuna.timestop.networking.timestop.TimeStopPacket;
 
 import java.nio.ByteBuffer;
 

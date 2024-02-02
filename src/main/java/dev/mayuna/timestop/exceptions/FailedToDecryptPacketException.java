@@ -11,6 +11,6 @@ public class FailedToDecryptPacketException extends RuntimeException {
     }
 
     public FailedToDecryptPacketException(Connection connection) {
-        super("Failed to decrypt packet from " + connection.getRemoteAddressTCP().toString());
+        super("Failed to decrypt packet from connection " + connection.toString());
     }
 }

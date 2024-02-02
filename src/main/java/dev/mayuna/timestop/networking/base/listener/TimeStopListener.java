@@ -1,7 +1,7 @@
-package dev.mayuna.timestop.networking.tcp.base.listener;
+package dev.mayuna.timestop.networking.base.listener;
 
 import com.esotericsoftware.kryonet.Connection;
-import dev.mayuna.timestop.networking.tcp.base.ConnectionContext;
+import dev.mayuna.timestop.networking.base.ConnectionContext;
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -13,8 +13,8 @@ import lombok.NonNull;
 @Getter
 public abstract class TimeStopListener<T> {
 
-    private final Class<T> listeningClass;
-    private final int priority;
+    protected final Class<T> listeningClass;
+    protected final int priority;
 
     /**
      * Creates a new listener

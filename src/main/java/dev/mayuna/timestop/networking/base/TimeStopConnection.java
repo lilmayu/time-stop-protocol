@@ -1,9 +1,9 @@
-package dev.mayuna.timestop.networking.tcp.base;
+package dev.mayuna.timestop.networking.base;
 
 import com.esotericsoftware.kryonet.Connection;
-import dev.mayuna.timestop.networking.tcp.base.listener.TimeStopListenerManager;
-import dev.mayuna.timestop.networking.tcp.base.translator.TimeStopTranslator;
-import dev.mayuna.timestop.networking.tcp.base.translator.TimeStopTranslatorManager;
+import dev.mayuna.timestop.networking.base.listener.TimeStopListenerManager;
+import dev.mayuna.timestop.networking.base.translator.TimeStopTranslator;
+import dev.mayuna.timestop.networking.base.translator.TimeStopTranslatorManager;
 import lombok.Getter;
 import lombok.Setter;
 
