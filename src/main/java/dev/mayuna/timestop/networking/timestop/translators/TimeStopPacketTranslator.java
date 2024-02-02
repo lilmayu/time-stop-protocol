@@ -11,7 +11,7 @@ import java.nio.ByteBuffer;
 
 public class TimeStopPacketTranslator extends TimeStopTranslator {
 
-    public static final int BUFFER_SIZE = 64_000_000; // 64MB
+    public static int BUFFER_SIZE = 64_000_000; // 64MB
 
     /**
      * Creates a new TimeStopPacketTranslator with priority 100

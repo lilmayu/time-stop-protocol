@@ -1,6 +1,5 @@
 package dev.mayuna.timestop;
 
-import dev.mayuna.timestop.networking.NetworkConstants;
 import dev.mayuna.timestop.networking.base.EndpointConfig;
 import dev.mayuna.timestop.networking.base.TimeStopClient;
 import dev.mayuna.timestop.networking.base.TimeStopServer;

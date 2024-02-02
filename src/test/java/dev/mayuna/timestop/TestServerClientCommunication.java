@@ -339,7 +339,7 @@ public class TestServerClientCommunication {
 
     @Test
     public void testTimeStopPacketSegmentTranslations() {
-        byte[] bytesToSend = new byte[NetworkConstants.OBJECT_BUFFER_SIZE*2];
+        byte[] bytesToSend = new byte[NetworkConstants.OBJECT_BUFFER_SIZE * 2];
         AtomicReference<Boolean> received = new AtomicReference<>(false);
 
         server.getTranslatorManager().registerTranslator(new TimeStopPacketTranslator());
