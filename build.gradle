@@ -1,0 +1,147 @@
+plugins {
+    id 'java'
+    id 'jacoco'
+    id 'java-library'
+    id 'signing'
+    id 'maven-publish'
+    id "com.github.johnrengelman.shadow" version "7.1.2"
+    id "io.github.gradle-nexus.publish-plugin" version "1.1.0"
+}
+
+group = 'dev.mayuna'
+version = '1.0.0'
+
+repositories {
+    mavenCentral()
+    maven { url 'https://jitpack.io' }
+}
+
+dependencies {
+    // KryoNet
+    implementation 'com.github.crykn:kryonet:2.22.8'
+
+    // Kryo
+    implementation 'com.esotericsoftware:kryo:5.5.0'
+
+    // Lombok
+    compileOnly 'org.projectlombok:lombok:1.18.24'
+    annotationProcessor 'org.projectlombok:lombok:1.18.24'
+    testCompileOnly 'org.projectlombok:lombok:1.18.24'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.24'
+
+    // JetBrain's Annotations
+    compileOnly 'org.jetbrains:annotations:20.1.0'
+
+    // JUnit
+    testImplementation platform('org.junit:junit-bom:5.9.1')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+
+    // Javalin (for testing)
+    testImplementation("io.javalin:javalin:5.6.1")
+}
+
+// Tasks
+
+task publishCloseAndRelease() {
+    dependsOn 'publishToSonatype'
+    dependsOn 'closeAndReleaseSonatypeStagingRepository'
+}
+
+test {
+    useJUnitPlatform()
+    finalizedBy jacocoTestReport
+}
+
+shadowJar {
+}
+
+tasks.jacocoTestReport {
+    reports {
+        csv.required = true
+    }
+}
+
+// Maven publishing
+
+publishing {
+
+    publications {
+        shadow(MavenPublication) {
+            groupId = 'dev.mayuna'
+            artifactId = 'time-stop-protocol'
+            version = getVersion()
+            from components.java
+
+            pom {
+                name = 'time-stop-protocol'
+                description = 'Time Stop Protocol for KryoNet'
+                url = 'https://github.com/lilmayu/time-stop-protocol'
+
+                scm {
+                    connection = 'scm:https://github.com/lilmayu/time-stop-protocol'
+                    developerConnection = 'scm:git:https://github.com/lilmayu/time-stop-protocol'
+                    url = 'https://github.com/lilmayu/time-stop-protocol'
+                }
+
+                licenses {
+                    license {
+                        name = 'BSD-3-Clause license'
+                        url = 'https://opensource.org/license/bsd-3-clause'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id = 'mayuna'
+                        name = 'Marek Lof'
+                        email = 'uwulilmayu@gmail.com'
+                    }
+                }
+            }
+        }
+    }
+
+    publishing {
+        repositories {
+            maven {
+                credentials {
+                    username = project.properties['ossrhUsername'] ?: System.getenv('ossrhUsername')
+                    password = project.properties['ossrhPassword'] ?: System.getenv('ossrhPassword')
+                }
+
+                url = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+            }
+        }
+    }
+}
+
+signing {
+    def signingKey = findProperty("signingKey")
+    def signingPassword = findProperty("signingPassword")
+    useInMemoryPgpKeys(signingKey, signingPassword)
+    sign publishing.publications.shadow
+}
+
+nexusPublishing {
+    repositories {
+        sonatype {
+            nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
+            snapshotRepositoryUrl.set(uri("https://s01.oss.sonatype.org/content/repositories/snapshots/"))
+            username = project.properties['ossrhUsername'] ?: System.getenv('ossrhUsername')
+            password = project.properties['ossrhPassword'] ?: System.getenv('ossrhPassword')
+        }
+    }
+}
+
+java {
+    withJavadocJar()
+    withSourcesJar()
+}
+
+shadowJar.dependsOn javadocJar
+shadowJar.dependsOn sourcesJar
+shadowJar.dependsOn jar
+
+components.java.withVariantsFromConfiguration(configurations.shadowRuntimeElements) {
+    skip()
+}
