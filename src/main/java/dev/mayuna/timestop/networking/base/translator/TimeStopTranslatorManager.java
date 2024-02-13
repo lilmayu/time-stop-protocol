@@ -18,6 +18,7 @@ public class TimeStopTranslatorManager {
 
     /**
      * Creates a new translator manager
+     * @param closeConnectionsOnTranslationException If true, connections will be closed if an exception occurs while translating
      */
     public TimeStopTranslatorManager(boolean closeConnectionsOnTranslationException) {
         this.closeConnectionsOnTranslationException = closeConnectionsOnTranslationException;
