@@ -1,6 +1,7 @@
 package dev.mayuna.timestop.networking.base.listener;
 
 import com.esotericsoftware.kryonet.Connection;
+import dev.mayuna.timestop.networking.timestop.TimeStopMessage;
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -53,8 +54,8 @@ public class TimeStopListenerManager {
      * @param listener Listener to register
      * @param <T>      Type of the message
      */
-    public <T> void registerOneTimeListener(TimeStopListener<T> listener) {
-        listeners.add(new TimeStopListener<T>(listener.getListeningClass(), listener.getPriority()) {
+    public <T> void registerOneTimeListener(TimeStopResponseListener<T> listener) {
+        listeners.add(new TimeStopResponseListener<T>(listener.getListeningClass(), listener.getPriority(), listener.getResponseToMessageId()) {
             @Override
             public void process(@NonNull Context context, @NonNull T message) {
                 unregisterListener(this);
@@ -70,8 +71,8 @@ public class TimeStopListenerManager {
      * @param unregisterCondition Condition to unregister the listener
      * @param <T>                 Type of the message
      */
-    public <T> void registerOneTimeListener(TimeStopListener<T> listener, BiFunction<TimeStopListener.Context, T, Boolean> unregisterCondition) {
-        listeners.add(new TimeStopListener<T>(listener.getListeningClass(), listener.getPriority()) {
+    public <T> void registerOneTimeListener(TimeStopResponseListener<T> listener, BiFunction<TimeStopListener.Context, T, Boolean> unregisterCondition) {
+        listeners.add(new TimeStopResponseListener<T>(listener.getListeningClass(), listener.getPriority(), listener.getResponseToMessageId()) {
             @Override
             public void process(@NonNull Context context, @NonNull T message) {
                 if (!unregisterCondition.apply(context, message)) {
@@ -97,6 +98,24 @@ public class TimeStopListenerManager {
 
             listeners.stream()
                      .filter(listener -> listener.getListeningClass().isAssignableFrom(object.getClass()))
+                     .filter(listener -> {
+                        if (!(object instanceof TimeStopMessage)) {
+                            return true;
+                        }
+
+                        if (!(listener instanceof TimeStopResponseListener<?>)) {
+                            return true;
+                        }
+
+                        TimeStopMessage timeStopMessage = (TimeStopMessage) object;
+                        TimeStopResponseListener<?> responseListener = (TimeStopResponseListener<?>) listener;
+
+                        if (responseListener.getResponseToMessageId() == null) {
+                            return true;
+                        }
+
+                        return responseListener.getResponseToMessageId().equals(timeStopMessage.getTimeStopResponseToMessageId());
+                     })
                      .sorted((listener1, listener2) -> Integer.compare(listener2.getPriority(), listener1.getPriority()))
                      .forEach(listenerWithParameter -> {
                          if (context.isShouldIgnore()) {

@@ -58,7 +58,7 @@ public class TestTimeStopPackets {
         server.getListenerManager().registerListener(new TimeStopListener<Packets.ProtocolVersionExchange>(Packets.ProtocolVersionExchange.class, 0) {
             @Override
             public void process(@NonNull Context context, Packets.@NonNull ProtocolVersionExchange message) {
-                context.getConnection().sendTCP(new Packets.ProtocolVersionExchange(1));
+                context.getConnection().sendTCP(new Packets.ProtocolVersionExchange(1).withResponseTo(message));
             }
         });
 
@@ -85,7 +85,7 @@ public class TestTimeStopPackets {
         client.getListenerManager().registerListener(new TimeStopListener<Packets.ProtocolVersionExchange>(Packets.ProtocolVersionExchange.class, 0) {
             @Override
             public void process(@NonNull Context context, Packets.@NonNull ProtocolVersionExchange message) {
-                context.getConnection().sendTCP(new Packets.ProtocolVersionExchange(1));
+                context.getConnection().sendTCP(new Packets.ProtocolVersionExchange(1).withResponseTo(message));
             }
         });
 
@@ -114,7 +114,7 @@ public class TestTimeStopPackets {
             @Override
             public void process(@NonNull Context context, Packets.@NonNull ProtocolVersionExchange message) {
                 Thread.sleep(100); // Wait 100ms to trigger timeout
-                context.getConnection().sendTCP(new Packets.ProtocolVersionExchange(1));
+                context.getConnection().sendTCP(new Packets.ProtocolVersionExchange(1).withResponseTo(message));
             }
         });
 
@@ -143,7 +143,7 @@ public class TestTimeStopPackets {
             @Override
             public void process(@NonNull Context context, Packets.@NonNull ProtocolVersionExchange message) {
                 Thread.sleep(100); // Wait 100ms to trigger timeout
-                context.getConnection().sendTCP(new Packets.ProtocolVersionExchange(1));
+                context.getConnection().sendTCP(new Packets.ProtocolVersionExchange(1).withResponseTo(message));
             }
         });
 
@@ -172,7 +172,7 @@ public class TestTimeStopPackets {
             @Override
             public void process(@NonNull Context context, Packets.@NonNull ProtocolVersionExchange message) {
                 Thread.sleep(100); // Wait 100ms
-                context.getConnection().sendTCP(new Packets.ProtocolVersionExchange(1));
+                context.getConnection().sendTCP(new Packets.ProtocolVersionExchange(1).withResponseTo(message));
             }
         });
 
@@ -201,7 +201,7 @@ public class TestTimeStopPackets {
             @Override
             public void process(@NonNull Context context, Packets.@NonNull ProtocolVersionExchange message) {
                 Thread.sleep(100); // Wait 100ms to trigger timeout
-                context.getConnection().sendTCP(new Packets.ProtocolVersionExchange(1));
+                context.getConnection().sendTCP(new Packets.ProtocolVersionExchange(1).withResponseTo(message));
             }
         });
 
@@ -217,6 +217,33 @@ public class TestTimeStopPackets {
         synchronized (received) {
             assertDoesNotThrow(() -> received.wait(1000));
             assertEquals(true, received.get());
+        }
+    }
+
+    @Test
+    public void sendClientAndWaitForResponseWithoutResponseIds() {
+        Packets.ProtocolVersionExchange packet = new Packets.ProtocolVersionExchange(1);
+        AtomicReference<Boolean> received = new AtomicReference<>(false);
+
+        server.getListenerManager().registerListener(new TimeStopListener<Packets.ProtocolVersionExchange>(Packets.ProtocolVersionExchange.class, 0) {
+            @Override
+            public void process(@NonNull Context context, Packets.@NonNull ProtocolVersionExchange message) {
+                context.getConnection().sendTCP(new Packets.ProtocolVersionExchange(1)/*.withResponseTo(message)*/);
+            }
+        });
+
+        client.sendTCPWithResponse(packet, Packets.ProtocolVersionExchange.class, response -> {
+            assertEquals(1, response.getProtocolVersion());
+
+            synchronized (received) {
+                received.set(true);
+                received.notifyAll();
+            }
+        });
+
+        synchronized (received) {
+            assertDoesNotThrow(() -> received.wait(1000));
+            assertNotEquals(true, received.get());
         }
     }
 }

@@ -7,6 +7,7 @@ import com.esotericsoftware.minlog.Log;
 import dev.mayuna.timestop.networking.NetworkConstants;
 import dev.mayuna.timestop.networking.base.listener.TimeStopListener;
 import dev.mayuna.timestop.networking.base.listener.TimeStopListenerManager;
+import dev.mayuna.timestop.networking.base.listener.TimeStopResponseListener;
 import dev.mayuna.timestop.networking.base.serialization.TimeStopSerialization;
 import dev.mayuna.timestop.networking.base.translator.TimeStopTranslator;
 import dev.mayuna.timestop.networking.base.translator.TimeStopTranslatorManager;
@@ -15,6 +16,7 @@ import lombok.NonNull;
 
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
@@ -116,7 +118,7 @@ public class TimeStopClient extends Client implements Listener {
      * @return Number of bytes sent (0 when object was translated to null)
      */
     public <T> int sendTCPWithResponse(Object object, Class<T> responseClass, Consumer<T> onResponse) {
-        listenerManager.registerOneTimeListener(new TimeStopListener<T>(responseClass, 0) {
+        listenerManager.registerOneTimeListener(new TimeStopResponseListener<T>(responseClass, 0, TimeStopResponseListener.getMessageIdIfAvailable(object)) {
             @Override
             public void process(@NonNull Context context, @NonNull T message) {
                 onResponse.accept(message);
@@ -151,7 +153,7 @@ public class TimeStopClient extends Client implements Listener {
         };
 
         // Create listener
-        TimeStopListener<T> listener = new TimeStopListener<T>(responseClass, 0) {
+        TimeStopResponseListener<T> listener = new TimeStopResponseListener<T>(responseClass, 0, TimeStopResponseListener.getMessageIdIfAvailable(object)) {
             @Override
             public void process(@NonNull Context context, @NonNull T message) {
                 timerTask.cancel();

@@ -17,7 +17,7 @@ public class Packets {
      */
     @Getter
     @Setter
-    public static abstract class BasePacket {
+    public static abstract class BasePacket extends TimeStopMessage {
 
         private String errorMessage;
 
