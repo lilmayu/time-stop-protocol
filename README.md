@@ -5,6 +5,7 @@ I have decided to make this protocol standalone, so I can easily use it in other
 
 ## Features
 - Packet response manager
+  - `TimeStopMessage`
 - Translators
   - Basic Translator
   - Segment Translator
@@ -29,6 +30,19 @@ client.sendTCPWithResponse(packet, Packets.ProtocolVersionExchange.class, respon
     assertEquals(1, response.getProtocolVersion());
 });
 ```
+
+#### `TimeStopMessage`
+Since 0.0.2, you can now extend your network messages with `TimeStopMessage` to handle the
+responses based on the Message IDs.
+
+This is useful when, for example, client is requesting server with many requests of the
+same class response type. Without these, client would invoke the sendTCPWithResponse method
+with any of the responded packets.
+
+However, when responding with a TimeStopMessage, you must set the response to message ID,
+otherwise client will not be able to handle the response (it will ignore it).
+
+See tests for examples, especially `TestTimeStopPackets`.
 
 ### Translators
 
